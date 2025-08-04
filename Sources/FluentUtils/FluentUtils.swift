@@ -1,5 +1,6 @@
 import Fluent
-//import FluentKit
+
+// import FluentKit
 import Foundation
 
 public protocol ModelWithTimestamps: Fluent.Model {
@@ -9,33 +10,42 @@ public protocol ModelWithTimestamps: Fluent.Model {
 
 public extension ModelWithTimestamps {
     func requireCreatedAt() throws -> Date {
-        guard let createdAt = self.createdAt else {
+        guard let createdAt = createdAt else {
             throw FluentError.missingField(name: "createdAt")
         }
+
         return createdAt
     }
 
     func requireUpdatedAt() throws -> Date {
-        guard let updatedAt = self.updatedAt else {
+        guard let updatedAt = updatedAt else {
             throw FluentError.missingField(name: "updatedAt")
         }
+
         return updatedAt
     }
 }
 
-
 public extension Model {
-    static func find<Field>(_ value: Field.Value?, uniqueField: KeyPath<Self, Field>, on database: Database) async throws -> Self? where Field: QueryableProperty {
+    static func find<Field>(
+        _ value: Field.Value?,
+        field: KeyPath<Self, Field>,
+        on database: Database
+    ) async throws -> Self? where Field: QueryableProperty {
         guard let value else {
             return nil
         }
 
         return try await Self.query(on: database)
-            .filter(uniqueField == value)
+            .filter(field == value)
             .first()
     }
-    
-    static func exists<Field>(_ value: Field.Value?, uniqueField: KeyPath<Self, Field>, on database: Database) async throws -> Bool where Field: QueryableProperty {
+
+    static func exists<Field>(
+        _ value: Field.Value?,
+        uniqueField: KeyPath<Self, Field>,
+        on database: Database
+    ) async throws -> Bool where Field: QueryableProperty {
         guard let value else {
             return false
         }
